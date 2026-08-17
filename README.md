@@ -92,7 +92,7 @@ flagged even when it balances. Predictions are hypotheses to test at the bench.
 
 ## Licence
 
-Copyright 2026 Jorge Fernández Méndez. Released under GPL-3.0-or-later. See
+Ideated and implemented by Jorge Fernández Méndez. Released under GPL-3.0-or-later. See
 [`LICENSE`](LICENSE) for the terms and [`AUTHORS.md`](AUTHORS.md) for authorship.
 
 If you redistribute this software or build on it, the licence requires you to keep the
