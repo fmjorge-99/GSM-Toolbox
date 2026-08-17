@@ -1,0 +1,428 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; height: 100%; width: 100%; overflow: hidden;
+               font-family: "Segoe UI", Arial, sans-serif; background: #ffffff; }
+  #map { height: 100vh; width: 100vw; position: relative; }
+
+  /* Escher's own Map/Model/Data/View menu bar (and edit-mode toolbar) is hidden —
+     its drop-downs would not collapse and cluttered the map. We provide a clean
+     custom vertical toolbar instead (#tools). */
+  #map .menu-bar, #map .button-panel { display: none !important; }
+
+  /* Right-click menu (#5). Kept OUTSIDE the interactive map area visually — it is a
+     transient overlay pinned to the cursor and dismissed on the next left-click. */
+  #ctxmenu {
+    position: fixed; z-index: 2147483002; display: none;
+    background: #ffffff; border: 1px solid #c6c9cc; border-radius: 6px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18); padding: 4px 0; min-width: 168px;
+    font-size: 13px; user-select: none;
+  }
+  #ctxmenu .ctx-title {
+    padding: 4px 12px 6px; color: #5f6368; font-size: 11px;
+    border-bottom: 1px solid #ececec; margin-bottom: 4px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 320px;
+  }
+  #ctxmenu .ctx-item { padding: 6px 12px; cursor: pointer; color: #202124; }
+  #ctxmenu .ctx-item:hover { background: #eef3fd; }
+
+  /* Custom vertical toolbar, pinned top-left (clears the zoom controls below it). */
+  #tools {
+    position: fixed; top: 10px; left: 10px; z-index: 2147483001; display: none;
+    flex-direction: column; gap: 5px;
+  }
+  #tools button {
+    display: flex; align-items: center; gap: 7px; width: 150px;
+    font-family: inherit; font-size: 12.5px; color: #1F2733; text-align: left;
+    background: rgba(255,255,255,0.97); border: 1px solid #d0d5db; border-radius: 7px;
+    padding: 6px 9px; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  #tools button:hover { background: #eef3fb; border-color: #b9c8e6; }
+  #tools button.active { background: #2D6CDF; color: #fff; border-color: #2D6CDF; }
+  #tools .ico { font-size: 15px; width: 18px; text-align: center; }
+  #hint { position: absolute; top: 12px; left: 172px; right: 16px; color: #555;
+          font-size: 15px; line-height: 1.5; pointer-events: none; }
+  #err { position: absolute; bottom: 10px; left: 10px; right: 10px; color: #b00020;
+         font-size: 12px; white-space: pre-wrap; }
+
+  /* Larger, always-legible labels (#3). A white halo (paint-order: stroke) is drawn
+     UNDER the glyphs so a connector crossing a label never hides it. */
+  #map .node-label {
+    font-size: 38px !important; font-weight: 600;
+    paint-order: stroke;
+    stroke: #ffffff; stroke-width: 6px; stroke-linejoin: round;
+  }
+  #map .reaction-label {
+    font-size: 27px !important;
+    paint-order: stroke;
+    stroke: #ffffff; stroke-width: 5px; stroke-linejoin: round;
+  }
+
+  /* Clickable affordance + hover highlight in EVERY view (#4): reactions AND
+     metabolites show a pointer cursor and highlight on hover; a click opens details. */
+  #map .reaction, #map .reaction-label, #map .segment,
+  #map .node, #map .node-circle, #map .node-label { cursor: pointer; }
+  #map g.reaction:hover .segment { stroke: #e8830c !important; }
+  #map g.reaction:hover .reaction-label { fill: #b45309 !important; font-weight: bold; }
+  #map g.node:hover .node-circle { stroke: #e8830c !important; stroke-width: 4px !important; }
+  #map g.node:hover .node-label { fill: #b45309 !important; font-weight: bold; }
+
+  /* "Move nodes" tool active: the cursor says nodes can be dragged (#2). */
+  body.moving #map svg { cursor: grab; }
+  body.moving #map g.node, body.moving #map g.node .node-circle { cursor: move !important; }
+  body.moving #map g.node:active .node-circle { cursor: grabbing !important; }
+
+  /* Interpretive legend, shown for single-strategy and difference views (#5). */
+  #legend {
+    position: fixed; bottom: 14px; left: 14px; z-index: 2147483000; display: none;
+    background: rgba(255,255,255,0.97); border: 1px solid #d0d5db; border-radius: 8px;
+    padding: 8px 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    font-size: 12px; color: #1F2733; max-width: 340px; pointer-events: none;
+  }
+  #legend .bar { height: 12px; border-radius: 3px; margin: 4px 0 2px; }
+  #legend .ends { display: flex; justify-content: space-between; color: #5f6368; }
+  #legend .title { font-weight: bold; margin-bottom: 2px; }
+</style>
+<script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+<script src="escher.min.js"></script>
+</head>
+<body>
+<div id="hint">Loading the interactive map engine…</div>
+<div id="map"></div>
+<div id="tools">
+  <button id="btn-fit" onclick="fitMap()"><span class="ico">⤢</span>Fit to view</button>
+  <button id="btn-move" onclick="toggleMove()"><span class="ico">✋</span>Move nodes</button>
+  <button id="btn-svg" onclick="exportMap('svg')"><span class="ico">📄</span>Export SVG</button>
+  <button id="btn-png" onclick="exportMap('png')"><span class="ico">🖼</span>Export PNG</button>
+</div>
+<div id="legend"></div>
+<div id="ctxmenu"></div>
+<div id="err"></div>
+<script>
+"use strict";
+var builder = null;
+var bridge = null;
+var lastMap = null;
+var lastModel = null;
+
+// Colour scales (proposal: sequential for magnitude, diverging RdBu for Δflux).
+var MAG_SCALE = [
+  {type:'min',    color:'#e6e6e6', size:8},
+  {type:'median', color:'#3690c0', size:20},
+  {type:'max',    color:'#034e7b', size:34}
+];
+var DIFF_SCALE = [
+  {type:'min',            color:'#2166ac', size:34},
+  {type:'value', value:0, color:'#f2f2f2', size:6},
+  {type:'max',            color:'#b2182b', size:34}
+];
+
+function showErr(msg){ document.getElementById('err').textContent = msg || ''; }
+function showHint(msg){
+  var h = document.getElementById('hint');
+  h.textContent = msg || '';
+  h.style.display = msg ? 'block' : 'none';
+}
+
+// ---- QWebChannel bridge (JS -> Python for reaction clicks) -----------------
+try {
+  new QWebChannel(qt.webChannelTransport, function(channel){
+    bridge = channel.objects.bridge;
+    if (bridge && bridge.jsReady) bridge.jsReady();
+  });
+} catch(e) { /* channel optional; map still works without it */ }
+
+function optionsFor(kind, flux){
+  var diff = (kind === 'diff');
+  return {
+    menu: 'all',                 // needed so builder methods exist; the bar is hidden by CSS
+    scroll_behavior: 'zoom',
+    fill_screen: true,
+    never_ask_before_quit: true,
+    enable_editing: true,        // lets nodes be dragged in the "Move nodes" tool (#3)
+    enable_keys: false,
+    reaction_data: flux || null,
+    reaction_scale: diff ? DIFF_SCALE : MAG_SCALE,
+    reaction_styles: diff ? ['color','size','text'] : ['color','size','text','abs'],
+    reaction_no_data_color: '#dddddd',
+    reaction_no_data_size: 6,
+    first_load_callback: function(){
+      showHint(''); wireClicks();
+      document.getElementById('tools').style.display = 'flex';
+      setMoveMode(moveOn);       // start in pan (or restore the tool state)
+    }
+  };
+}
+
+var moveOn = false;
+
+// Fit the whole map into view.
+function fitMap(){ try { if (builder && builder.map) builder.map.zoom_extent_canvas(); } catch(e){} }
+
+// Toggle the "Move nodes" tool (#2). Escher enables node dragging ONLY in brush mode
+// (_setMode: toggleSelectableDrag("brush"===mode)) and pans only in zoom/view mode
+// (togglePanDrag). The public API is builder.brush_mode()/view_mode() — there is no
+// set_mode() method, which is why the tool previously did nothing and kept panning.
+function setMoveMode(on){
+  moveOn = !!on;
+  try {
+    if (builder){
+      if (moveOn) builder.brush_mode();   // drag nodes; panning disabled
+      else builder.view_mode();           // pan/zoom; no canvas handles
+    }
+  } catch(e){ showErr('Move tool unavailable: ' + (e && e.message ? e.message : e)); }
+  var b = document.getElementById('btn-move');
+  if (b) b.classList.toggle('active', moveOn);
+  document.body.classList.toggle('moving', moveOn);
+}
+function toggleMove(){ setMoveMode(!moveOn); }
+
+// Export the current map. Escher triggers a browser download that Qt captures and
+// saves via the panel's download handler.
+function exportMap(fmt){
+  try {
+    if (!builder || !builder.map) return;
+    if (fmt === 'png') builder.map.save_png(); else builder.map.save_svg();
+  } catch(e){ showErr('Export failed: ' + e); }
+}
+
+// Build (or rebuild) the map. mapStr/modelStr are JSON strings; flux is a dict.
+function gsmBuild(mapStr, modelStr, fluxStr, kind){
+  try {
+    showErr('');
+    lastMap = JSON.parse(mapStr);
+    lastModel = modelStr ? JSON.parse(modelStr) : null;
+    var flux = fluxStr ? JSON.parse(fluxStr) : null;
+    // A fresh Builder each build keeps the colour scale/styles in sync with the mode.
+    document.getElementById('map').innerHTML = '';
+    builder = escher.Builder(lastMap, lastModel, null,
+                             escher.libs.d3_select('#map'), optionsFor(kind, flux));
+    updateLegend(kind, !!flux);
+    // Show the custom toolbar + wire clicks now (don't rely on first_load_callback,
+    // which does not always fire when editing is enabled).
+    setTimeout(function(){
+      showHint('');
+      document.getElementById('tools').style.display = 'flex';
+      wireClicks();
+      watchTooltips();
+      setMoveMode(moveOn);
+    }, 60);
+    return 'ok';
+  } catch(e){
+    showErr('Map build failed: ' + (e && e.message ? e.message : e));
+    showHint('');
+    return 'error';
+  }
+}
+
+var legendWanted = true;   // toggled from the panel's "Show/Hide legend" button (#3)
+var legendKind = null, legendHasFlux = false;
+
+// Show/hide the legend without rebuilding the map.
+function gsmShowLegend(on){
+  legendWanted = !!on;
+  updateLegend(legendKind, legendHasFlux);
+}
+
+// Interpretive legend for the colour scales (#5).
+function updateLegend(kind, hasFlux){
+  var el = document.getElementById('legend');
+  legendKind = kind; legendHasFlux = hasFlux;
+  if (!legendWanted){ el.style.display = 'none'; return; }
+  if (kind === 'diff'){
+    el.innerHTML =
+      '<div class="title">Difference map — flux change (A vs B)</div>'
+      + '<div class="bar" style="background:linear-gradient(to right,#2166ac,#f2f2f2,#b2182b)"></div>'
+      + '<div class="ends"><span>down-regulated<br>(less flux in A)</span>'
+      + '<span style="text-align:center">no change</span>'
+      + '<span style="text-align:right">up-regulated<br>(more flux in A)</span></div>'
+      + '<div style="margin-top:5px;color:#5f6368">Arrow width grows with the size of the change. '
+      + 'Hover a reaction to read its Δflux; click for details.</div>';
+    el.style.display = 'block';
+  } else if (hasFlux){
+    el.innerHTML =
+      '<div class="title">Flux magnitude |v|</div>'
+      + '<div class="bar" style="background:linear-gradient(to right,#e6e6e6,#3690c0,#034e7b)"></div>'
+      + '<div class="ends"><span>low</span><span style="text-align:right">high</span></div>'
+      + '<div style="margin-top:5px;color:#5f6368">Arrow width grows with |flux|. '
+      + 'Hover for values; click a reaction/metabolite for details.</div>';
+    el.style.display = 'block';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+// Live flux update without rebuilding (used by the FBA navigator).
+function gsmSetFlux(fluxStr){
+  try {
+    if (!builder) return 'no-builder';
+    builder.set_reaction_data(fluxStr ? JSON.parse(fluxStr) : null);
+    return 'ok';
+  } catch(e){ showErr('Flux update failed: ' + e); return 'error'; }
+}
+
+function gsmShowHint(msg){ showHint(msg); }
+
+// Toggle the click-affordance styling for the live FBA navigator (#U5).
+function gsmSetNav(on){
+  document.body.classList.toggle('escher-nav', !!on);
+}
+
+// Find the reaction/metabolite under an event, walking up from the target. d3 binds
+// each element's datum to node.__data__, carrying the bigg_id and (for nodes) the
+// node_type. Returns {kind:'metabolite'|'reaction', id:...} or null.
+function hitTest(evt){
+  var el = evt.target;
+  for (var i=0; i<6 && el; i++, el = el.parentNode){
+    var cls = (el.getAttribute && el.getAttribute('class')) || '';
+    var d = el.__data__;
+    if (!d || !d.bigg_id) continue;
+    if ((d.node_type === 'metabolite') || cls.indexOf('node') >= 0)
+      return {kind: 'metabolite', id: d.bigg_id};
+    if (cls.indexOf('reaction') >= 0 || cls.indexOf('segment') >= 0)
+      return {kind: 'reaction', id: d.bigg_id};
+  }
+  return null;
+}
+
+function hideCtxMenu(){
+  var m = document.getElementById('ctxmenu');
+  if (m) m.style.display = 'none';
+}
+
+// Two distinct interactions on a reaction/metabolite (#5):
+//   * LEFT-click SELECTS it (bridge.reactionSelected/metaboliteSelected). This is what
+//     the FBA navigator uses to pick a reaction and edit its flux. It NEVER opens the
+//     details popup.
+//   * RIGHT-click opens a menu whose only item ("Show reaction details" / "Show
+//     metabolite details") opens the details popup (bridge.reactionInfo/metaboliteInfo).
+// Keeping information off left-click is the whole point: a left-click on a reaction in
+// the navigator must select, not interrupt the user with a popup.
+function showCtxMenu(evt, hit){
+  var m = document.getElementById('ctxmenu');
+  if (!m) return;
+  var kind = hit.kind === 'metabolite' ? 'metabolite' : 'reaction';
+  m.innerHTML = '';
+  var title = document.createElement('div');
+  title.className = 'ctx-title';
+  title.textContent = hit.id + '  (' + kind + ')';
+  m.appendChild(title);
+  var item = document.createElement('div');
+  item.className = 'ctx-item';
+  item.textContent = 'Show ' + kind + ' details';
+  item.addEventListener('click', function(){
+    hideCtxMenu();
+    if (hit.kind === 'metabolite'){
+      if (bridge && bridge.metaboliteInfo) bridge.metaboliteInfo(hit.id);
+    } else {
+      if (bridge && bridge.reactionInfo) bridge.reactionInfo(hit.id);
+    }
+  });
+  m.appendChild(item);
+  m.style.display = 'block';
+  // Keep the menu inside the window.
+  var w = m.offsetWidth || 180, h = m.offsetHeight || 60;
+  var x = Math.min(evt.clientX, window.innerWidth - w - 4);
+  var y = Math.min(evt.clientY, window.innerHeight - h - 4);
+  m.style.left = Math.max(2, x) + 'px';
+  m.style.top = Math.max(2, y) + 'px';
+}
+
+var _downX = 0, _downY = 0, _downOn = false;
+
+function wireClicks(){
+  var map = document.getElementById('map');
+  if (map.__wired) return;
+  map.__wired = true;
+
+  map.addEventListener('contextmenu', function(evt){
+    var hit = hitTest(evt);
+    if (!hit){ hideCtxMenu(); return; }
+    evt.preventDefault();      // replace the browser menu with ours
+    evt.stopPropagation();
+    showCtxMenu(evt, hit);
+  });
+
+  // Track the left-button press so we can tell a genuine CLICK (select) from a DRAG
+  // (pan / move-node). Escher fires a real 'click' even after a small drag, so we
+  // gate on how far the pointer moved rather than trusting 'click' alone.
+  map.addEventListener('mousedown', function(evt){
+    if (evt.button !== 0) return;
+    hideCtxMenu();
+    _downX = evt.clientX; _downY = evt.clientY; _downOn = true;
+  }, true);
+
+  map.addEventListener('click', function(evt){
+    if (evt.button !== 0 || !_downOn) return;
+    _downOn = false;
+    var moved = Math.abs(evt.clientX - _downX) + Math.abs(evt.clientY - _downY);
+    if (moved > 5) return;              // it was a pan/drag, not a select
+    var hit = hitTest(evt);
+    if (!hit) return;
+    // SELECT only — never open the popup on a left-click.
+    if (hit.kind === 'metabolite'){
+      if (bridge && bridge.metaboliteSelected) bridge.metaboliteSelected(hit.id);
+    } else {
+      if (bridge && bridge.reactionSelected) bridge.reactionSelected(hit.id);
+    }
+  });
+
+  window.addEventListener('blur', hideCtxMenu);
+  window.addEventListener('resize', hideCtxMenu);
+
+  // #2: after a node is dragged, Escher repositions the segment paths but leaves the
+  // arrowhead markers on their previous transform, so the tips end up rotated to a
+  // stale angle and look distorted. A full redraw after the drag settles recomputes
+  // every arrowhead against the node's new position. Debounced, and only while the
+  // Move tool is on, so normal panning/zooming is untouched.
+  map.addEventListener('mouseup', function(){
+    if (!moveOn) return;
+    redrawSoon();
+  });
+}
+
+var _redrawTimer = null;
+function redrawSoon(){
+  if (_redrawTimer) clearTimeout(_redrawTimer);
+  _redrawTimer = setTimeout(function(){
+    _redrawTimer = null;
+    try {
+      if (builder && builder.map && builder.map.draw_everything) builder.map.draw_everything();
+    } catch(e){ /* a redraw failure must never break the map */ }
+  }, 40);
+}
+
+// Escher labels the value on a reaction/metabolite "Data". In this tool that value is
+// always a flux, so relabel it (#5). Escher renders its tooltip lazily, so watch the
+// DOM and rewrite the label whenever a tooltip appears.
+function relabelDataAsFlux(root){
+  var nodes = (root || document.body).querySelectorAll('*');
+  for (var i=0; i<nodes.length; i++){
+    var n = nodes[i];
+    for (var j=0; j<n.childNodes.length; j++){
+      var c = n.childNodes[j];
+      if (c.nodeType === 3 && /(^|\s)Data\s*:?/.test(c.nodeValue))
+        c.nodeValue = c.nodeValue.replace(/(^|\s)Data(\s*:?)/, '$1Flux$2');
+    }
+  }
+}
+
+function watchTooltips(){
+  try {
+    var obs = new MutationObserver(function(muts){
+      for (var i=0; i<muts.length; i++){
+        for (var j=0; j<muts[i].addedNodes.length; j++){
+          var n = muts[i].addedNodes[j];
+          if (n.nodeType === 1) relabelDataAsFlux(n);
+        }
+      }
+    });
+    obs.observe(document.body, {childList: true, subtree: true});
+    relabelDataAsFlux(document.body);
+  } catch(e){ /* cosmetic only */ }
+}
+</script>
+</body>
+</html>
