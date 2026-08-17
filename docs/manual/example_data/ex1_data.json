@@ -1,0 +1,154 @@
+{
+ "syn_baseline": {
+  "growth": 0.1633,
+  "photon": -100.0,
+  "co2": -6.84,
+  "o2": 10.324,
+  "ac": 0.0
+ },
+ "syn_acetate_ceiling": 5.0,
+ "syn_acetate_envelope": [
+  [
+   0.0,
+   0.1633
+  ],
+  [
+   0.5,
+   0.147
+  ],
+  [
+   1.0,
+   0.1307
+  ],
+  [
+   1.5,
+   0.1143
+  ],
+  [
+   2.0,
+   0.098
+  ],
+  [
+   2.5,
+   0.0817
+  ],
+  [
+   3.0,
+   0.0653
+  ],
+  [
+   3.5,
+   0.049
+  ],
+  [
+   4.0,
+   0.0327
+  ],
+  [
+   4.5,
+   0.0163
+  ],
+  [
+   5.0,
+   -0.0
+  ]
+ ],
+ "syn_engineered": {
+  "ac_floor": 2.5,
+  "growth": 0.0817,
+  "o2": 10.162,
+  "co2": -8.42,
+  "photon": -100.0
+ },
+ "ppu_baseline": {
+  "growth": 0.2689,
+  "ac": -10.0,
+  "o2": -8.73,
+  "co2": 9.17
+ },
+ "styrene_apply": {
+  "added_reactions": [
+   "PAL",
+   "FDC_styr"
+  ],
+  "product_exchange": {
+   "id": "EX_styr_e",
+   "created": true,
+   "metabolite": "styr_c"
+  },
+  "unbalanced": []
+ },
+ "ppu_styrene_ceiling": 1.3995,
+ "ppu_styrene_envelope": [
+  [
+   0.0,
+   0.2689
+  ],
+  [
+   0.14,
+   0.242
+  ],
+  [
+   0.2799,
+   0.2151
+  ],
+  [
+   0.4199,
+   0.1882
+  ],
+  [
+   0.5598,
+   0.1613
+  ],
+  [
+   0.6998,
+   0.1344
+  ],
+  [
+   0.8397,
+   0.1075
+  ],
+  [
+   0.9797,
+   0.0807
+  ],
+  [
+   1.1196,
+   0.0538
+  ],
+  [
+   1.2596,
+   0.0269
+  ],
+  [
+   1.3995,
+   0.0
+  ]
+ ],
+ "community": {
+  "status": "optimal",
+  "growth": {
+   "Syn6803": 0.1536,
+   "Pputida": 0.0555
+  },
+  "o2": 9.267,
+  "co2": 1.336,
+  "ac": 0.0,
+  "photon": -100.0,
+  "styr": 0.0,
+  "note_ac_internal": "acetate flows 6803->pool->putida; net boundary EX_ac_e ~ 0.0"
+ },
+ "community_styrene_max": 0.4185,
+ "mono": {
+  "Syn6803": {
+   "o2": 10.324,
+   "co2": -6.84,
+   "ac": 0.0
+  },
+  "Pputida": {
+   "o2": -8.73,
+   "co2": 9.17,
+   "ac": -10.0
+  }
+ }
+}

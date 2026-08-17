@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gsm-toolbox"
+version = "0.3.3"
+description = "User-friendly desktop app for genome-scale metabolic modeling and metabolic engineering."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "GSM ToolBox" }]
+license = { text = "MIT" }
+dependencies = [
+    "cobra>=0.29",
+    "PySide6==6.6.3.1",
+    "shiboken6==6.6.3.1",
+    "networkx>=3.0",
+    "matplotlib>=3.7",
+    "pandas>=2.0",
+    "numpy>=1.24,<2",
+]
+
+[project.optional-dependencies]
+strain-design = ["straindesign>=1.13", "cameo>=0.13"]
+qc = ["memote>=0.17"]
+dev = ["pytest>=7.0", "pyinstaller>=6.0"]
+# Thermodynamics (MDF). eQuilibrator declares numpy>=2 but computes correctly under the
+# numpy 1.26 the rest of the stack is pinned to (verified: ATP hydrolysis ΔrG′° ≈ -30
+# kJ/mol). Install with --no-deps or tolerate the resolver warning to keep numpy<2.
+thermo = ["equilibrator-api>=0.6", "equilibrator-cache>=0.6", "component-contribution>=0.6"]
+
+[project.gui-scripts]
+gsm-toolbox = "gsm_toolbox.app:main"
+
+[tool.setuptools.packages.find]
+include = ["gsm_toolbox*"]
+
+[tool.setuptools.package-data]
+gsm_toolbox = ["resources/**/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

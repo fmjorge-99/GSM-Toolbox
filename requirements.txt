@@ -1,0 +1,33 @@
+# GSM ToolBox runtime dependencies
+# Core constraint-based modeling
+cobra>=0.29
+# GUI
+# Pinned to 6.6.3.1: newer PySide6 (6.8+) bundles Qt that requires a newer MSVC
+# runtime than ships with many Windows installs ("DLL load failed" otherwise).
+PySide6==6.6.3.1
+shiboken6==6.6.3.1
+# Network graph + layout
+networkx>=3.0
+# Plots (Qt backend)
+matplotlib>=3.7
+# Data handling (pulled in by cobra, pinned here for clarity)
+pandas>=2.0
+openpyxl>=3.1            # read Excel omics tables in the dataset-preparation tool
+# numpy<2: PySide6/shiboken 6.6.3 are built against the NumPy 1.x ABI.
+numpy>=1.24,<2
+# Ships analysis closures to a worker process so heavy solves never freeze the UI.
+cloudpickle>=3.0
+
+# Phase 2+ scientific deps
+scipy>=1.10               # better graph layouts; loopless FVA; deletion analysis
+straindesign>=1.15        # Phase 4: OptKnock / RobustKnock / MCS
+pyscipopt>=5.0            # bundles the SCIP MILP solver (fast strain design; used by default)
+rdkit>=2024.3             # clean B&W 2-D structure drawings for reaction/pathway figures
+
+# --- Optional / not bundled (heavy dependency trees) ---
+# cameo>=0.13             # OptGene (pulls in Jupyter/Escher; FSEOF implemented natively instead)
+# memote>=0.17            # external QC suite (built-in QC implemented natively instead)
+
+# --- Dev / packaging ---
+# pytest>=7.0
+# pyinstaller>=6.0
