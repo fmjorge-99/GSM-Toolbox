@@ -53,13 +53,17 @@ before starting the application.
 
 ### macOS
 
-**There is no macOS download yet.** The published release contains Windows files only.
-Install from source instead — see [macOS](#macos) under section 2, which is a single
-command and takes about five minutes.
+Open the `.dmg` and drag the app to Applications. **Use the `arm64` file on Apple
+Silicon** — any Mac sold since late 2020.
 
-Once a `.dmg` is published, or once you have built one yourself with
-`scripts/build_bundle.sh`, install it by opening the `.dmg` and dragging the app to
-Applications. Use the `arm64` file on Apple Silicon and the `x86_64` file on Intel.
+**On an Intel Mac**, use the `x86_64` file if the release has one. It may not: Apple has
+dropped the architecture and GitHub's Intel build runners are being retired with it, so
+these builds are provided only while a runner exists. If there is no `x86_64` file,
+install from source instead — see [macOS](#macos) under section 2. That route works on
+Intel and Apple Silicon alike, takes about five minutes, and is not going away.
+
+An `arm64` build will not run on an Intel Mac, and vice versa. If you are unsure which
+you have, click the Apple menu ▸ About This Mac: "Apple M1" or later means `arm64`.
 
 > **First launch of a downloaded build.** It is not signed with a paid Apple
 > certificate, so macOS refuses it with "cannot be opened because the developer cannot be

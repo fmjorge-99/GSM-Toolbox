@@ -21,6 +21,12 @@ jobs:
   build:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.os }}
+    # A retired runner label does not fail: it queues forever with nothing to pick it
+    # up, and because the release job waits on this matrix, one dead label blocks the
+    # whole release. macos-13 was retired on 4 December 2025 and did exactly that. The
+    # Intel entry is therefore marked optional, so if its label is retired in turn the
+    # other three platforms still ship.
+    continue-on-error: ${{ matrix.optional || false }}
     strategy:
       fail-fast: false   # one platform failing should not hide the others' results
       matrix:
@@ -31,9 +37,13 @@ jobs:
           - os: macos-14
             label: macOS (Apple Silicon)
             artifact: GSM_ToolBox-macos-arm64
-          - os: macos-13
+          # Apple has dropped x86_64 and GitHub follows: macos-15-intel replaced the
+          # retired macos-13, and Intel support ends when macOS 15 retires in autumn
+          # 2027. Intel Mac users can always install from source (INSTALL.md).
+          - os: macos-15-intel
             label: macOS (Intel)
             artifact: GSM_ToolBox-macos-x86_64
+            optional: true
           - os: ubuntu-22.04    # oldest supported glibc, so the bundle runs widely
             label: Linux (x64)
             artifact: GSM_ToolBox-linux

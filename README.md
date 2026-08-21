@@ -43,13 +43,15 @@ publication-ready figures.
 | Your platform | Do this |
 |---|---|
 | **Windows** | Download the installer from [Releases](../../releases) and double-click it. Nothing else needed. |
-| **macOS** | No download yet — install from source with two commands. See below. |
-| **Linux** | No download yet — install from source with two commands. See below. |
+| **macOS (Apple Silicon)** | Download the `arm64` `.dmg` from [Releases](../../releases), or install from source — see below. |
+| **macOS (Intel)** | Install from source — see below. Intel builds are not always available. |
+| **Linux** | Download the `.tar.gz` from [Releases](../../releases), or install from source — see below. |
 
 ### macOS
 
-The published release contains Windows files only, so there is no `.dmg` to download.
-Installing from source takes about five minutes and is fully supported.
+Installing from source takes about five minutes, works on Apple Silicon and Intel
+alike, and is the recommended route on an Intel Mac — Apple has dropped that
+architecture, so a prebuilt `x86_64` `.dmg` may not be in every release.
 
 **1. Install Python 3.10, 3.11 or 3.12.** macOS ships 3.9, which is too old. Download the
 macOS universal2 installer from [python.org](https://www.python.org/downloads/macos/) and
