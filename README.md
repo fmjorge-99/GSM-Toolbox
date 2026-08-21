@@ -108,7 +108,6 @@ installer, the macOS `.dmg` and the Linux tarball yourself.
 | Document | What it covers |
 |---|---|
 | [`docs/GSM_ToolBox_Manual.pdf`](docs/GSM_ToolBox_Manual.pdf) | The user manual. Concepts, every analysis, worked examples |
-| [`docs/pathway_manual/`](docs/pathway_manual) | Heterologous pathway design in depth |
 | [`CHANGELOG.md`](CHANGELOG.md) | Release history |
 
 ## Models and data
@@ -124,14 +123,6 @@ has something to open on a first run.
 A compact universal reaction database ships with the application so pathway search works
 without a network connection. Larger databases are downloaded from their providers when
 you ask for them, and are not redistributed here.
-
-## A note on what the numbers mean
-
-Constraint-based models predict what a network can do at steady state, not what a cell
-will do. The application is built around that distinction. Thresholds carry a stated
-confidence, an inferred result says it is inferred, a measurement that is missing is
-reported as missing rather than as zero, and a route whose chemistry looks wrong is
-flagged even when it balances. Predictions are hypotheses to test at the bench.
 
 ## Licence
 
