@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# Environments
+.venv/
+venv/
+env/
+
+# Build output
+build/
+dist/
+installer/Output/
+
+# The application's own data directory, if anyone runs it from inside the checkout
+.gsm_toolbox/
+
+# Editors and OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Working files that should never be committed
+*.bak
+*.orig
+*.rej
+*.log
+*.tmp
+scratch*
+outputs_scratch/
+backups/

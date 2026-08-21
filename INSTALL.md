@@ -2,60 +2,74 @@
 
 | Route | Platform | Needs Python? |
 |---|---|---|
-| [Ready-made bundle](#1-ready-made-bundles) | Windows, macOS, Linux | **No** |
-| [One-command install from source](#2-one-command-install-linux-and-macos) | Linux, macOS | Yes, 3.10–3.12 |
-| [Manual install from source](#3-manual-install-any-platform) | Any | Yes, 3.10–3.12 |
+| [Download a ready-made build](#1-ready-made-builds) | **Windows only, for now** | No |
+| [One command from source](#2-one-command-install-linux-and-macos) | macOS, Linux | Yes, 3.10 to 3.12 |
+| [Manual install from source](#3-manual-install-any-platform) | Any | Yes, 3.10 to 3.12 |
 | [Build a bundle yourself](#4-building-a-bundle-yourself) | Any | Yes |
 
-**In a hurry?** On Linux or macOS:
+> **macOS users, read this first.** The current release has Windows files only, so there
+> is no `.dmg` to download yet. Installing from source takes about five minutes and is
+> fully supported — jump to [macOS](#macos). Do not follow the Windows sections.
+
+The quickest way to run the toolbox on any platform is from source:
 
 ```sh
-./scripts/install.sh && ./scripts/run.sh
+git clone https://github.com/fmjorge-99/GSM-Toolbox.git
+cd GSM-Toolbox
+python -m venv .venv
+. .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+python run_gsm_toolbox.py
 ```
 
 ---
 
-## 1. Ready-made bundles
+## 1. Ready-made builds
 
-Download from the [Releases](../../releases) page. Each bundle contains Python, Qt,
-the solvers and every dependency, so nothing else needs installing.
+A frozen build contains Python, Qt and the solvers, so nothing else needs installing.
+These files are around 230 to 350 MB, which is far above the size a git repository
+accepts, so they are **not in the repository**. They are published on the
+[Releases](../../releases) page when a release is made.
+
+If the Releases page is empty, or has no file for your platform, build one yourself.
+Section 4 covers Windows and takes about ten minutes. `scripts/build_bundle.sh` does the
+same on macOS and Linux.
 
 ### Windows, installer
 
 Run `GSM_ToolBox_Setup_<version>.exe`. It installs per user into
 `%LOCALAPPDATA%\Programs\GSM ToolBox`, so no administrator rights are needed. Launch it
-from the Start menu afterwards.
-
-Uninstall from Settings, Apps, or with the Start menu shortcut.
+from the Start menu afterwards, and uninstall from Settings, Apps.
 
 ### Windows, portable
 
-Download `GSM_ToolBox-<version>-windows-portable.zip`, unzip it anywhere, and run
-`GSM_ToolBox.exe` inside the folder. Nothing is installed and nothing is written to the
-registry, so this works from a USB stick or a shared drive, and on a machine where you
-cannot install software.
+Unzip `GSM_ToolBox-<version>-windows-portable.zip` anywhere and run `GSM_ToolBox.exe`
+inside the folder. Nothing is installed and nothing is written to the registry, so this
+works from a USB stick and on a machine where you cannot install software.
 
-Downloaded databases still go to your user profile at `%USERPROFILE%\.gsm_toolbox`. To
-keep those with the portable copy instead, create an empty folder named `.gsm_toolbox`
-beside `GSM_ToolBox.exe` and the application will use that.
-
-> **SmartScreen.** Both builds are unsigned, so Windows may show "Windows protected your
-> PC" the first time. Choose More info, then Run anyway. Signing requires a paid
-> certificate.
+Downloaded databases go to `%USERPROFILE%\.gsm_toolbox`. To keep them inside the portable
+folder instead, create an empty folder named `.gsm_toolbox` next to `GSM_ToolBox.exe`
+before starting the application.
 
 ### macOS
 
-Open the `.dmg` and drag **GSM ToolBox** to Applications. Pick the file matching your
-machine. Use `arm64` for Apple Silicon and `x86_64` for Intel.
+**There is no macOS download yet.** The published release contains Windows files only.
+Install from source instead — see [macOS](#macos) under section 2, which is a single
+command and takes about five minutes.
 
-> **First launch.** The app is unsigned and not notarised, so macOS will refuse it with
-> *"cannot be opened because the developer cannot be verified"*. Either **right-click the
-> app and choose Open** (then confirm), or clear the quarantine flag once:
+Once a `.dmg` is published, or once you have built one yourself with
+`scripts/build_bundle.sh`, install it by opening the `.dmg` and dragging the app to
+Applications. Use the `arm64` file on Apple Silicon and the `x86_64` file on Intel.
+
+> **First launch of a downloaded build.** It is not signed with a paid Apple
+> certificate, so macOS refuses it with "cannot be opened because the developer cannot be
+> verified". Right-click the app and choose Open, then confirm. Alternatively clear the
+> quarantine flag once:
 > ```sh
 > xattr -dr com.apple.quarantine "/Applications/GSM ToolBox.app"
 > ```
-> This happens because the build is not signed with a paid Apple Developer
-> certificate. It is not caused by anything the application does.
+> This applies only to a bundle you downloaded. A bundle you built yourself, and the
+> source install below, are never quarantined and need none of this.
 
 ### Linux
 
@@ -64,50 +78,94 @@ tar -xzf GSM_ToolBox-<version>-linux-x86_64.tar.gz
 ./GSM_ToolBox/GSM_ToolBox
 ```
 
-Optionally add it to your applications menu:
+Add it to your applications menu with `./GSM_ToolBox/install-desktop.sh`.
 
-```sh
-./GSM_ToolBox/install-desktop.sh
-```
+The bundle is built on Ubuntu 22.04, so it needs glibc 2.35 or newer. That covers Ubuntu
+22.04 and later, Debian 12 and later, and Fedora 36 and later. On an older distribution,
+install from source instead.
 
-The bundle is built on Ubuntu 22.04, so it needs glibc 2.35 or newer. That covers
-Ubuntu 22.04 and later, Debian 12 and later, and Fedora 36 and later. On an older
-distribution, install from source instead.
+> **SmartScreen.** The Windows builds are unsigned, so Windows may show "Windows
+> protected your PC" the first time. Choose More info, then Run anyway. Signing requires
+> a paid certificate.
 
 ---
 
-## 2. One-command install (Linux and macOS)
+## 2. One-command install (macOS and Linux)
 
 Installs into a virtual environment beside the checkout and registers a launcher, so the
 application can be started without a terminal afterwards.
 
+> **Run the scripts with `bash scripts/...`, not `./scripts/...`.** The repository stores
+> them without the executable bit, so `./scripts/install.sh` fails with `permission
+> denied`. Prefixing with `bash` works regardless. If you prefer the short form, run
+> `chmod +x scripts/*.sh` once first.
+
+### macOS
+
+**Step 1 — install Python 3.10, 3.11 or 3.12.** macOS ships Python 3.9, which is too old,
+so this step is genuinely required. Either option is fine:
+
+- **Without a package manager** (simplest): download the macOS 64-bit universal2
+  installer for Python 3.12 from [python.org/downloads/macos](https://www.python.org/downloads/macos/)
+  and double-click it. Nothing else to configure.
+- **With Homebrew**: `brew install "python@3.12"`.
+
+**Step 2 — install the toolbox.** Open Terminal and run:
+
 ```sh
-git clone <repository-url>
-cd GSM_Toolbox_Distribution
-./scripts/install.sh
+git clone https://github.com/fmjorge-99/GSM-Toolbox.git
+cd GSM-Toolbox
+bash scripts/install.sh
 ```
 
-The script picks a suitable Python, creates `.venv`, installs the dependencies,
-**verifies that the libraries actually import and that Qt can initialise**, and then adds
-a launcher:
+It takes a few minutes. The script finds your Python, creates `.venv`, installs the
+dependencies, **checks that they really import and that Qt can start**, and then creates a
+double-clickable **`GSM ToolBox.app`** in the folder.
 
-- On Linux it adds an entry to your applications menu.
-- On macOS it creates a double-clickable `GSM ToolBox.app` in the folder, which you can
-  drag to Applications.
+**Step 3 — launch it.** Drag `GSM ToolBox.app` to your Applications folder and open it
+like any other app, or run `bash scripts/run.sh`.
+
+Apple Silicon and Intel are both supported, and no extra system libraries are needed
+because Qt ships complete in the wheel. Gatekeeper does not interfere with this route:
+nothing was downloaded as a packaged app, so nothing is quarantined. On first launch
+macOS may ask for permission for network access, which the application uses only to
+download reaction databases when you ask it to.
+
+**If something goes wrong**
+
+| Symptom | Cause and fix |
+|---|---|
+| `permission denied` | Use `bash scripts/install.sh`, or `chmod +x scripts/*.sh` first |
+| `error: GSM ToolBox needs Python 3.10, 3.11 or 3.12` | Step 1 was skipped, or a newer Python is first on `PATH`. Install 3.12 and re-run |
+| `xcrun: error: invalid active developer path` | `git` needs Apple's command line tools: run `xcode-select --install`, then retry |
+| Build errors while pip installs | Almost always Python 3.13. Check with `python3 --version` and install 3.12 |
+
+### Linux
+
+```sh
+git clone https://github.com/fmjorge-99/GSM-Toolbox.git
+cd GSM-Toolbox
+bash scripts/install.sh
+```
+
+The script detects your package manager and prints the exact system packages Qt needs if
+any are missing, then adds an entry to your applications menu.
+
+### All the commands
 
 | Command | What it does |
 |---|---|
-| `./scripts/install.sh` | Install and add a launcher |
-| `./scripts/install.sh --no-desktop` | Install only |
-| `./scripts/install.sh --deps` | Print the system packages you need, then exit |
-| `./scripts/run.sh` | Launch (installs first if needed) |
-| `./scripts/uninstall.sh` | Remove the environment and launcher |
-| `./scripts/uninstall.sh --all` | Also delete cached databases in `~/.gsm_toolbox` |
+| `bash scripts/install.sh` | Install and add a launcher |
+| `bash scripts/install.sh --no-desktop` | Install only |
+| `bash scripts/install.sh --deps` | Print the system packages you need, then exit |
+| `bash scripts/run.sh` | Launch (installs first if needed) |
+| `bash scripts/uninstall.sh` | Remove the environment and launcher |
+| `bash scripts/uninstall.sh --all` | Also delete cached databases in `~/.gsm_toolbox` |
 
 ### Linux system libraries
 
 Qt needs shared libraries that are missing from minimal installs. `install.sh` detects
-your package manager and prints the exact command. Run `./scripts/install.sh --deps` to
+your package manager and prints the exact command. Run `bash scripts/install.sh --deps` to
 see it without installing anything. For reference:
 
 **Debian / Ubuntu**
@@ -143,8 +201,8 @@ run from source:
 ### Install and run
 
 ```sh
-git clone <repository-url>
-cd GSM_Toolbox_Distribution
+git clone https://github.com/fmjorge-99/GSM-Toolbox.git
+cd GSM-Toolbox
 
 python3 -m venv .venv
 . .venv/bin/activate            # Windows: .venv\Scripts\activate
@@ -194,24 +252,62 @@ for. There is no way to produce a macOS app from Windows, or the reverse.
 ### macOS and Linux
 
 ```sh
-./scripts/build_bundle.sh
+bash scripts/build_bundle.sh
 ```
 
 Builds in an isolated environment and produces a `.dmg` on macOS or a `.tar.gz` on
 Linux, both self-contained.
 
+**On macOS this is the second way to install**, and the one to use if you want a proper
+app in Applications that does not depend on the checkout, or if you need to hand a
+single file to colleagues who have no Python. It needs Python 3.10 to 3.12 once, to
+build with, and takes roughly fifteen minutes. It produces:
+
+- `dist/GSM ToolBox.app` — drag it to Applications and it is done
+- `GSM_ToolBox-<version>-macOS-<arch>.dmg` — the file to share
+
+The script ad-hoc signs the app, which is what prevents the "damaged and can't be
+opened" error Apple Silicon otherwise shows for an unsigned bundle. The `.dmg` is still
+unsigned and unnotarised, so anyone who **downloads** it will need the right-click ▸ Open
+step described in section 1. The app you built locally is not quarantined and opens
+normally.
+
 ### Windows
 
-Requires [Inno Setup 6](https://jrsoftware.org/isinfo.php).
+You need [Inno Setup 6](https://jrsoftware.org/isinfo.php) and Python 3.10 to 3.12.
+
+This is two steps in a fixed order. PyInstaller freezes the application into
+`dist\GSM_ToolBox`, and Inno Setup then wraps that folder into a single setup file. The
+Inno script only packages what already exists, so running it first fails with
+"No files found matching ...\dist\GSM_ToolBox\*". That message means the freeze step has
+not run, not that a file is missing from the repository.
 
 ```powershell
+# from the repository root
 pip install -r requirements.txt pyinstaller
+
+# step 1, about 8 minutes: freeze the application
 python -m PyInstaller gsm_toolbox.spec --noconfirm
+
+# step 2, about 4 minutes: wrap it into an installer
 & "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe" installer\gsm_toolbox.iss
 ```
 
-The frozen application lands in `dist\GSM_ToolBox\`; the installer in
-`installer\Output\`. See [`installer/README.md`](installer/README.md).
+Results:
+
+| Step | Produces |
+|---|---|
+| 1 | `dist\GSM_ToolBox\GSM_ToolBox.exe`, runnable straight away |
+| 2 | `installer\Output\GSM_ToolBox_Setup_<version>.exe` |
+
+To make the portable zip instead of an installer, compress the folder from step 1:
+
+```powershell
+Compress-Archive -Path dist\GSM_ToolBox -DestinationPath GSM_ToolBox-portable.zip
+```
+
+If you open the `.iss` in the Inno Setup Compiler window rather than running `ISCC.exe`,
+use Build, then Compile. The same two-step order applies.
 
 ### All three at once, without owning the machines
 

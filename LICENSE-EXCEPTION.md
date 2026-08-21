@@ -1,16 +1,15 @@
 # Additional permission under GNU GPL version 3 section 7
 
-GSM ToolBox is copyright © 2026 Jorge Fernández Méndez and is licensed
-under the GNU General Public License, version 3 or, at your option, any later version.
-See [`LICENSE`](LICENSE).
+GSM ToolBox was designed and developed by Jorge Fernández Méndez, and is licensed under
+the GNU General Public License, version 3 or, at your option, any later version. See
+[`LICENSE`](LICENSE).
 
 The following additional permission is granted under section 7 of that licence. It
 applies to GSM ToolBox itself; it does not, and cannot, change the terms of any
 third-party component.
 
-> **Linking exception.** As a special exception, Jorge Fernández Méndez, the copyright
-> holder of GSM ToolBox,
-> gives you permission to combine GSM ToolBox with the numerical solver libraries, the
+> **Linking exception.** As a special exception, Jorge Fernández Méndez, as author and
+> rights holder of GSM ToolBox, gives you permission to combine GSM ToolBox with the numerical solver libraries, the
 > Qt libraries, and the compiler and platform runtime libraries listed in
 > [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md), and to convey the resulting
 > work. You must comply with the GNU General Public License in all respects for all of

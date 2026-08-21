@@ -40,25 +40,66 @@ publication-ready figures.
 
 ## Install
 
-Ready-made bundles are on the [Releases](../../releases) page. They contain Python, Qt and
-the solvers, so nothing else needs installing.
-
-| Platform | Get it |
+| Your platform | Do this |
 |---|---|
-| Windows, installer | Run `GSM_ToolBox_Setup_<version>.exe`. Installs per user, no admin rights |
-| Windows, portable | Unzip `GSM_ToolBox-<version>-windows-portable.zip` and run `GSM_ToolBox.exe`. Nothing is installed |
-| macOS | Open the `.dmg` and drag the app to Applications |
-| Linux | `tar -xzf GSM_ToolBox-*-linux-x86_64.tar.gz` then `./GSM_ToolBox/GSM_ToolBox` |
+| **Windows** | Download the installer from [Releases](../../releases) and double-click it. Nothing else needed. |
+| **macOS** | No download yet — install from source with two commands. See below. |
+| **Linux** | No download yet — install from source with two commands. See below. |
 
-To install from source on Linux or macOS, one command sets up the environment, checks that
-Qt really works and adds a desktop launcher:
+### macOS
+
+The published release contains Windows files only, so there is no `.dmg` to download.
+Installing from source takes about five minutes and is fully supported.
+
+**1. Install Python 3.10, 3.11 or 3.12.** macOS ships 3.9, which is too old. Download the
+macOS universal2 installer from [python.org](https://www.python.org/downloads/macos/) and
+double-click it, or run `brew install "python@3.12"`.
+
+**2. In Terminal:**
 
 ```sh
-./scripts/install.sh && ./scripts/run.sh
+git clone https://github.com/fmjorge-99/GSM-Toolbox.git
+cd GSM-Toolbox
+bash scripts/install.sh
 ```
 
-Full instructions are in [INSTALL.md](INSTALL.md), including the system libraries Qt needs
-on Linux and the extra step macOS requires on first launch.
+That creates a double-clickable **`GSM ToolBox.app`** in the folder — drag it to
+Applications. The script checks that the libraries really import and that Qt can start
+before telling you it worked, so a broken install reports itself instead of failing at
+first launch. Apple Silicon and Intel are both supported.
+
+> Use `bash scripts/install.sh`, not `./scripts/install.sh`. The scripts are stored
+> without the executable bit, so the `./` form gives `permission denied`.
+
+**Want a self-contained app instead?** `bash scripts/build_bundle.sh` freezes Python, Qt
+and the solvers into `dist/GSM ToolBox.app` plus a `.dmg` you can share with people who
+have no Python. It needs Python once, to build with, and takes about fifteen minutes.
+
+### Linux
+
+```sh
+git clone https://github.com/fmjorge-99/GSM-Toolbox.git
+cd GSM-Toolbox
+bash scripts/install.sh
+```
+
+The script prints the exact Qt system packages your distribution needs if any are
+missing, then adds an entry to your applications menu.
+
+### Any platform, manually
+
+```sh
+git clone https://github.com/fmjorge-99/GSM-Toolbox.git
+cd GSM-Toolbox
+python -m venv .venv
+. .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+python run_gsm_toolbox.py
+```
+
+Full instructions are in [INSTALL.md](INSTALL.md): the system libraries Qt needs on
+Linux, the Gatekeeper step for a downloaded macOS build, and how to build the Windows
+installer, the macOS `.dmg` and the Linux tarball yourself.
 
 ## Documentation
 
@@ -92,12 +133,13 @@ flagged even when it balances. Predictions are hypotheses to test at the bench.
 
 ## Licence
 
-Ideated and implemented by Jorge Fernández Méndez. Released under GPL-3.0-or-later. See
-[`LICENSE`](LICENSE) for the terms and [`AUTHORS.md`](AUTHORS.md) for authorship.
+GSM ToolBox was designed and developed by **Jorge Fernández Méndez**. It is released
+under GPL-3.0-or-later. See [`LICENSE`](LICENSE) for the terms and
+[`AUTHORS.md`](AUTHORS.md) for authorship.
 
 If you redistribute this software or build on it, the licence requires you to keep the
-copyright notice and to make your source available under the same terms. Attribution to
-the original author is part of that.
+author notice and to make your source available under the same terms. Naming the original
+author is part of that.
 
 The pre-built binaries bundle solver and platform runtime libraries whose terms are not
 GPL compatible. A linking exception under section 7 of the GPL covers that case and is

@@ -1,0 +1,37 @@
+# Line endings.
+#
+# The shell scripts in scripts/ are run on macOS and Linux. If one is ever committed
+# with Windows line endings it fails immediately and opaquely, with
+#
+#     bad interpreter: /usr/bin/env bash^M: no such file or directory
+#
+# which reads like a missing interpreter rather than a line-ending problem. Forcing LF
+# in the repository makes that impossible regardless of which machine edits the file or
+# how core.autocrlf happens to be set on it.
+
+*                text=auto
+
+*.sh             text eol=lf
+*.py             text eol=lf
+*.md             text eol=lf
+*.yml            text eol=lf
+*.yaml           text eol=lf
+*.toml           text eol=lf
+*.cfg            text eol=lf
+*.json           text eol=lf
+*.txt            text eol=lf
+*.spec           text eol=lf
+
+# Windows-only files keep CRLF, because cmd.exe requires it in batch files.
+*.bat            text eol=crlf
+*.iss            text eol=crlf
+
+# Binary assets: never touched.
+*.png            binary
+*.ico            binary
+*.icns           binary
+*.pdf            binary
+*.zip            binary
+*.dmg            binary
+*.exe            binary
+*.gz             binary
