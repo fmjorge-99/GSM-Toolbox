@@ -2,36 +2,18 @@
 
 | Route | Platform | Needs Python? |
 |---|---|---|
-| [Download a ready-made build](#1-ready-made-builds) | **Windows only, for now** | No |
+| [Download a ready-made build](#1-ready-made-builds) | **Windows MacOS & Linux** | No |
 | [One command from source](#2-one-command-install-linux-and-macos) | macOS, Linux | Yes, 3.10 to 3.12 |
 | [Manual install from source](#3-manual-install-any-platform) | Any | Yes, 3.10 to 3.12 |
 | [Build a bundle yourself](#4-building-a-bundle-yourself) | Any | Yes |
 
-> **macOS users, read this first.** The current release has Windows files only, so there
-> is no `.dmg` to download yet. Installing from source takes about five minutes and is
-> fully supported — jump to [macOS](#macos). Do not follow the Windows sections.
-
-The quickest way to run the toolbox on any platform is from source:
-
-```sh
-git clone https://github.com/fmjorge-99/GSM-Toolbox.git
-cd GSM-Toolbox
-python -m venv .venv
-. .venv/bin/activate          # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-python run_gsm_toolbox.py
-```
-
----
-
 ## 1. Ready-made builds
 
 A frozen build contains Python, Qt and the solvers, so nothing else needs installing.
-These files are around 230 to 350 MB, which is far above the size a git repository
-accepts, so they are **not in the repository**. They are published on the
+These files are around 230 to 350 MB and they are published on the
 [Releases](../../releases) page when a release is made.
 
-If the Releases page is empty, or has no file for your platform, build one yourself.
+If the Releases page has no file for your platform, build one yourself.
 Section 4 covers Windows and takes about ten minutes. `scripts/build_bundle.sh` does the
 same on macOS and Linux.
 
@@ -54,7 +36,7 @@ before starting the application.
 ### macOS
 
 Open the `.dmg` and drag the app to Applications. **Use the `arm64` file on Apple
-Silicon** — any Mac sold since late 2020.
+Silicon** (2020 and older models)
 
 **On an Intel Mac**, use the `x86_64` file if the release has one. It may not: Apple has
 dropped the architecture and GitHub's Intel build runners are being retired with it, so
