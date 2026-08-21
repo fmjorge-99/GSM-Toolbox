@@ -44,7 +44,7 @@ publication-ready figures.
 |---|---|
 | **Windows** | Download the installer from [Releases](../../releases) and double-click it. Nothing else needed. |
 | **macOS (Apple Silicon)** | Download the `arm64` `.dmg` from [Releases](../../releases), or install from source — see below. |
-| **macOS (Intel)** | Install from source — see below. Intel builds are not always available. |
+| **macOS (Intel)** | Install from source. (Described below) |
 | **Linux** | Download the `.tar.gz` from [Releases](../../releases), or install from source — see below. |
 
 ### macOS
