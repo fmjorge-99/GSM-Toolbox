@@ -45,7 +45,7 @@ Metabolic engineers, microbiologists and biotechnologists who want to use constr
 
 ## AI Use Consideration
 
-**GSM Toolbox code has been written using agentic AI, specifically Claude Opus 5 and Sonnet 5, under human direction. The entire Toolbox interface design, workflows and and scientific judgment embodied in the toolbox has been carefully considere by a human. The AI agent acted as a translator from human language into code. Debugging, and final implementation has been always performed with an strict human-in-the-loop strategy for final curation.
+**GSM Toolbox code has been written using agentic AI**, specifically Claude Opus 5 and Sonnet 5, under human direction. The entire Toolbox interface design, workflows and and scientific judgment embodied in the toolbox has been carefully considere by a human. The AI agent acted as a translator from human language into code. Debugging, and final implementation has been always performed with an strict human-in-the-loop strategy for final curation.
 
 During the last years the use of AI for solving scientifically relevant questions has exploded, and it is going to keep increasing. However te use of AI also carries serious considerations in terms of environmental impact, trustworthiness, reproducibility and intellectual property. All these aspects carry a significant ethical side, and the development of this toolbox has been done with all of them on mind.
 
