@@ -1,42 +1,61 @@
-# GSM ToolBox
+# GSM Toolbox
 
-A desktop application for genome-scale metabolic modelling, written for biologists rather
-than for programmers. It wraps [COBRApy](https://opencobra.github.io/cobrapy/) in an
-interface where every analysis is a button, every result is a table you can read, and the
-assumptions behind a number are stated next to it.
+**An interactive desktop application for genome-scale metabolic modeling, built for biologists.
 
-Runs on Windows, macOS and Linux.
+[![License: GPL v3+](https://img.shields.io/badge/License-GPLv3+-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)
+![Platforms](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)
+
+---
+
+## What it is
+
+GSM Toolbox is an interactive graphical environment for **loading, editing, constraining and simulating genome-scale metabolic models**. Every analysis, including customized ones, is run through buttons, selections, setting panels or guided wizards. The software is a toolbox that aims to unify the most common analysis for genome scale metabolic models under a single interface. 
+
+**Intended for biologists with little to none coding skills**
+
+**No command line is required, and no file is ever hand-written.** Configuration, constraint files and exports are produced by the interface itself.
+
+Results are presented upfront, are navigable, and include plots and interactive visualizations that communicate better than numbers. However, raw data from every analysis is also easily accesible, exportable and reproducible. The aim is to **answer biologically meaningful questions** via custom analysis that are straightforward to set up, and deliver results that can be interpreted and acted on.
+
+---
+
+## Who it is for
+
+Metabolic engineers, microbiologists and biotechnologists who want to use constraint-based modeling in their work, who do not write code, and who should not have to in order to run methods and bioinformatic tools that have been developed over the years, but always hard to access due to its scattered access and high entry barrier. The toolbox aim to be equally useful to people who *do* code, as a fast way to explore a model behaviour before committing to an script-based custom analysis. The **Export → Python script** functions is designed to hand you a working COBRApy script for any analysis that have been set up in the interface. Easing further implementations over the already generated code. 
+
+---
 
 ## What it does
 
-**Simulate.** FBA, pFBA, FVA, gene and reaction essentiality, phenotype phase planes,
-production envelopes and robustness analysis.
+**Simulation**, flux balance analysis, parsimonious FBA, flux variability analysis, flux sampling, phenotype phase planes, production envelopes, robustness analysis, MOMA and ROOM, batch and dynamic simulation.
 
-**Design strains.** OptKnock, RobustKnock, minimal cut sets and FSEOF. Results are ranked
-by carbon yield rather than raw flux, so routes to different products stay comparable.
+**Strain design**, OptKnock, RobustKnock, minimal cut sets and FSEOF, with results ranked by carbon yield so routes to different products are comparable.
 
-**Design pathways.** Search BiGG, MetaNetX, ModelSEED, KEGG and Rhea for a route from your
-host to a target compound. When no database has one, the toolbox can generate candidate
-chemistry from reaction rules. Every proposed route is checked for mass and charge
-balance, for thermodynamic feasibility, and for steps that quietly swap a compound for a
-branched-chain isomer of it. That last kind of step balances perfectly and is still
-impossible.
+**Pathway discovery**, searches BiGG, MetaNetX, ModelSEED, KEGG and Rhea for a route to a target compound, checking every candidate for mass and charge balance, thermodynamic feasibility, and spurious isomer swaps. Finds candidate enzymes by EC number or reaction similarity.
 
-**Find enzymes.** Candidate enzymes by EC number, or by reaction similarity for
-rule-generated steps that carry no EC number at all.
+**Experimental data**, import measurements with their units and uncertainty, convert them to model constraints, and compare predictions against observations. Includes sealed-vessel gas handling and photon-flux conversion for phototrophs.
 
-**Follow dynamics.** Sweep a condition to find where the network rewires, or follow a
-batch culture as it consumes its medium. Runs are stored side by side and can be overlaid
-on one plot.
+**Model quality and comparison**, MEMOTE quality reports, FROG reproducibility archives, energy-generating-cycle detection, curation tools, and the ability to run one analysis across several models at once and see where they agree and where they do not.
 
-**Apply regulation.** A stoichiometric model will fix carbon in the dark and keep
-photosynthesising after nitrogen has run out. Loadable rule sets constrain it with what
-the organism actually does. Before you read any result, the interface tells you how much
-of a rule set can affect your model, because a rule can report as firing while changing
-nothing.
+**Results and reproducibility**, every run is stored with full provenance, sessions save and reload everything, results can be re-run and verified, and anything can be exported as data, figures, a report, or a standalone Python script.
 
-**Visualise.** An interactive network map with flux overlays, Escher maps and
-publication-ready figures.
+---
+
+
+## AI Use Consideration
+
+**GSM Toolbox code has been written using agentic AI, specifically Claude Opus 5 and Sonnet 5, under human direction. The entire Toolbox interface design, workflows and and scientific judgment embodied in the toolbox has been carefully considere by a human. The AI agent acted as a translator from human language into code. Debugging, and final implementation has been always performed with an strict human-in-the-loop strategy for final curation.
+
+During the last years the use of AI for solving scientifically relevant questions has exploded, and it is going to keep increasing. However te use of AI also carries serious considerations in terms of environmental impact, trustworthiness, reproducibility and intellectual property. All these aspects carry a significant ethical side, and the development of this toolbox has been done with all of them on mind.
+
+The main inspiration for developing this toolbox is to facilitate access to Genome Scale Metabolic model analysis to users with little to none coding notions but deep knowledge about biological systems. Genome-scale metabolic analysis has well-established, deterministic methods that can be automated and audited. However, frequently code-naive users tend to directly use a language model to perform such an analysis. This not only significantly increases the use of AI but also produces results that cannot be easily reproduced or checked. GSM Toolbox exists so that a biologist without coding experience can run these analyses **properly**, through software whose behavior is fixed, inspectable and reproducible, rather than delegating them to a model that may improvise and consume significantly more resources. The software is tested against reference implementations: every wrapped analysis is asserted to return the same numbers as COBRApy, under more than one solver, in continuous integration. 
+
+Using AI to build the tool, and then not needing AI to use it, is the intended trade.
+
+
+---
+
 
 ## Install
 
